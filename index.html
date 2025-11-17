@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Stok - Aeryn Salon</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Aeryn Salon – Stok Produk</h1>
+            <nav>
+                <button class="nav-btn active" data-page="dashboard-page">Dashboard</button>
+                <button class="nav-btn" data-page="products-page">Data Produk</button>
+                <button class="nav-btn" data-page="tx-in-page">Transaksi Masuk</button>
+                <button class="nav-btn" data-page="tx-out-page">Transaksi Keluar</button>
+                <button class="nav-btn" data-page="reports-page">Laporan</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Halaman Dashboard -->
+            <div id="dashboard-page" class="page active">
+                <div id="dashboard-cards" class="dashboard-cards">
+                    <!-- Kartu ringkasan akan di-generate oleh JS -->
+                </div>
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <h2>Stok Segera Habis</h2>
+                    </div>
+                    <div class="table-container">
+                        <table id="low-stock-table">
+                            <thead>
+                                <tr>
+                                    <th>Nama Produk</th>
+                                    <th>Kategori</th>
+                                    <th>Stok Akhir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Diisi oleh JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Halaman Data Produk -->
+            <div id="products-page" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Daftar Produk</h2>
+                        <button id="addProductBtn" class="btn btn-primary">Tambah Produk Baru</button>
+                    </div>
+                    <div class="filters-container">
+                        <div class="form-group">
+                            <input type="search" id="product-search-input" placeholder="Cari berdasarkan nama atau kode...">
+                        </div>
+                        <div class="form-group">
+                            <select id="product-category-filter">
+                                <option value="">Semua Kategori</option>
+                                <!-- Diisi oleh JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="productTable">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Produk</th>
+                                    <th>Kategori</th>
+                                    <th>Satuan</th>
+                                    <th>Stok Awal</th>
+                                    <th>Masuk</th>
+                                    <th>Keluar</th>
+                                    <th>Stok Akhir</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Diisi oleh JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Halaman Transaksi Masuk -->
+            <div id="tx-in-page" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Catat Produk Masuk</h2>
+                    </div>
+                    <form id="tx-in-form" class="transaction-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="tx-in-product">Pilih Produk</label>
+                                <select id="tx-in-product" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-in-date">Tanggal Masuk</label>
+                                <input type="date" id="tx-in-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-in-quantity">Jumlah Masuk</label>
+                                <input type="number" id="tx-in-quantity" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-in-notes">Keterangan (Opsional)</label>
+                                <input type="text" id="tx-in-notes" placeholder="cth: Dari Supplier A">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
+                    </form>
+                </div>
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <h2>Riwayat Produk Masuk</h2>
+                    </div>
+                    <div class="table-container">
+                        <table id="tx-in-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kode Produk</th>
+                                    <th>Nama Produk</th>
+                                    <th>Jumlah</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Diisi oleh JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Halaman Transaksi Keluar -->
+            <div id="tx-out-page" class="page">
+                 <div class="card">
+                    <div class="card-header">
+                        <h2>Catat Produk Keluar</h2>
+                    </div>
+                    <form id="tx-out-form" class="transaction-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="tx-out-product">Pilih Produk</label>
+                                <select id="tx-out-product" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-out-date">Tanggal Keluar</label>
+                                <input type="date" id="tx-out-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-out-quantity">Jumlah Keluar</label>
+                                <input type="number" id="tx-out-quantity" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-out-usage">Jenis Pemakaian</label>
+                                <select id="tx-out-usage" required>
+                                    <option value="Dipakai Treatment">Dipakai Treatment</option>
+                                    <option value="Dijual ke Customer">Dijual ke Customer</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                             <div class="form-group form-group-full">
+                                <label for="tx-out-notes">Keterangan (Opsional)</label>
+                                <input type="text" id="tx-out-notes">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
+                    </form>
+                </div>
+                <div class="card mt-2">
+                    <div class="card-header">
+                        <h2>Riwayat Produk Keluar</h2>
+                    </div>
+                    <div class="table-container">
+                        <table id="tx-out-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kode Produk</th>
+                                    <th>Nama Produk</th>
+                                    <th>Jumlah</th>
+                                    <th>Jenis Pemakaian</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Diisi oleh JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Halaman Laporan -->
+            <div id="reports-page" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Filter Laporan</h2>
+                    </div>
+                    <form id="report-filters">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="report-start-date">Tanggal Mulai</label>
+                                <input type="date" id="report-start-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="report-end-date">Tanggal Selesai</label>
+                                <input type="date" id="report-end-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="report-category">Kategori Produk</label>
+                                <select id="report-category">
+                                    <option value="">Semua Kategori</option>
+                                    <!-- Diisi oleh JS -->
+                                </select>
+                            </div>
+                        </div>
+                         <button type="submit" class="btn btn-primary">Tampilkan Laporan</button>
+                    </form>
+                </div>
+                 <div class="card mt-2">
+                    <div class="card-header">
+                        <h2>Hasil Laporan</h2>
+                        <button id="exportCsvBtn" class="btn btn-success">Export ke CSV</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Kode Produk</th>
+                                    <th>Nama Produk</th>
+                                    <th>Kategori</th>
+                                    <th>Total Masuk</th>
+                                    <th>Total Keluar</th>
+                                    <th>Stok Akhir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Diisi oleh JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal untuk Tambah/Edit Produk -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modalTitle">Tambah Produk Baru</h2>
+            <form id="productForm">
+                <div class="form-group">
+                    <label for="productId">Kode Produk</label>
+                    <input type="text" id="productId" required placeholder="cth: SHP001">
+                </div>
+                <div class="form-group">
+                    <label for="productName">Nama Produk</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label for="productCategory">Kategori</label>
+                    <select id="productCategory" required>
+                        <option value="">Pilih Kategori...</option>
+                        <option value="Shampoo">Shampoo</option>
+                        <option value="Conditioner">Conditioner</option>
+                        <option value="Creambath">Creambath</option>
+                        <option value="Cat Rambut">Cat Rambut</option>
+                        <option value="Styling">Styling</option>
+                        <option value="Lainnya">Lainnya (Baru)</option>
+                    </select>
+                    <input type="text" id="newCategory" class="hidden mt-1" placeholder="Masukkan nama kategori baru">
+                </div>
+                <div class="form-group">
+                    <label for="productUnit">Satuan</label>
+                    <select id="productUnit" required>
+                        <option value="botol">Botol</option>
+                        <option value="tube">Tube</option>
+                        <option value="box">Box</option>
+                        <option value="pcs">Pcs</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="initialStock">Stok Awal</label>
+                    <input type="number" id="initialStock" required min="0">
+                </div>
+                <div class="form-group">
+                    <label for="lowStockThreshold">Batas Stok Menipis</label>
+                    <input type="number" id="lowStockThreshold" required min="0" placeholder="cth: 5">
+                </div>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
