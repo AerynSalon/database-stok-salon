@@ -6,6 +6,8 @@
     <title>AERYN SALON Stock Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Library Scan Barcode -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
@@ -48,9 +50,8 @@
     <nav class="bg-white shadow-md sticky top-0 z-20">
         <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <!-- Updated logo section -->
                 <div class="bg-purple-100 p-2 rounded-full flex items-center justify-center">
-                    <img src="assets/logo.png" alt="AERYN SALON Logo" class="h-8 w-8 object-contain">
+                    <img src="https://i.ibb.co/C0f9rQx/AERYN-SALON-LOGO.png" alt="AERYN SALON Logo" class="h-8 w-8 object-contain">
                 </div>
                 <div>
                     <h1 class="text-lg font-bold text-purple-600 leading-none">AERYN SALON</h1>
@@ -117,12 +118,17 @@
         <!-- Inventory View -->
         <div id="view-inventory" class="fade-in">
             <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-                <!-- Magic Search Bar -->
+                <!-- Search & Scan Bar -->
                 <div class="relative flex-grow flex gap-2">
                     <div class="relative flex-grow">
                         <i id="searchIcon" class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-all"></i>
                         <input type="text" id="searchInput" onkeyup="handleSearchInput(event)" placeholder="Cari nama produk..." class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none text-sm transition-all" autocomplete="off">
                     </div>
+                    <!-- Barcode Scan Button -->
+                    <button onclick="openScanner()" class="bg-gray-800 text-white px-4 rounded-xl hover:bg-gray-900 transition shadow-sm flex items-center gap-2" title="Scan Barcode">
+                        <i class="fa-solid fa-barcode"></i>
+                    </button>
+                    <!-- Magic Search Button -->
                     <button onclick="toggleMagicSearch()" id="btnMagicSearch" class="bg-white text-purple-500 border border-purple-200 px-4 rounded-xl hover:bg-purple-50 transition shadow-sm" title="Pencarian Ajaib AI">
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </button>
@@ -172,12 +178,10 @@
                 <button onclick="closeModal('settingsModal')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <!-- Google Sheets Config -->
             <div class="space-y-4 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Google Apps Script URL</label>
                     <input type="text" id="inputSheetUrl" placeholder="https://script.google.com/..." class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none text-sm">
-                    <p class="text-[10px] text-gray-400 mt-1">Deploy script sebagai 'Web App' dengan akses 'Anyone'.</p>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="syncData(true)" class="flex-1 bg-blue-600 text-white py-2 rounded-xl font-medium hover:bg-blue-700 transition text-sm">
@@ -191,7 +195,6 @@
 
             <hr class="border-gray-100 mb-4">
 
-            <!-- Gemini API Config -->
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Gemini API Key (AI)</label>
@@ -202,7 +205,23 @@
         </div>
     </div>
 
-    <!-- AI Modal (General Advice) -->
+    <!-- Scanner Modal -->
+    <div id="scannerModal" class="fixed inset-0 bg-black/80 hidden z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative">
+            <div class="p-4 bg-gray-900 text-white flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2"><i class="fa-solid fa-barcode"></i> Scan Barcode</h3>
+                <button onclick="closeScanner()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="bg-black relative h-64">
+                <div id="reader" class="w-full h-full"></div>
+            </div>
+            <div class="p-4 text-center text-sm text-gray-600">
+                Arahkan kamera ke barcode barang.
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Modal -->
     <div id="aiModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-t-3xl">
@@ -252,7 +271,7 @@
         </div>
     </div>
 
-    <!-- Add Product Modal with Auto-Fill -->
+    <!-- Add Product Modal with Barcode & Auto-Fill -->
     <div id="addModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
             <div class="flex justify-between items-center mb-6">
@@ -261,6 +280,15 @@
             </div>
             <form onsubmit="addProduct(event)">
                 <div class="space-y-4">
+                    <!-- New Barcode Field -->
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Barcode (Opsional)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="newProdBarcode" placeholder="Scan atau ketik kode" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none bg-gray-50 font-mono text-sm">
+                            <button type="button" onclick="openScanner('add')" class="bg-gray-200 text-gray-600 px-3 rounded-lg hover:bg-gray-300 transition"><i class="fa-solid fa-barcode"></i></button>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-xs text-gray-500 mb-1">Nama Produk</label>
                         <div class="flex gap-2">
@@ -331,6 +359,8 @@
         let magicSearchActive = false;
         let sheetUrl = localStorage.getItem('salon_sheet_url') || "";
         let userApiKey = localStorage.getItem('gemini_api_key') || "";
+        let html5QrcodeScanner = null;
+        let scanMode = 'search'; // 'search' or 'add'
 
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -345,7 +375,7 @@
 
             if (products.length === 0 && !sheetUrl) {
                 products = [
-                    { id: 1, name: "L'Oreal Hair Mask", category: "Hair Care", stock: 12, unit: "Jar" }
+                    { id: 1, name: "L'Oreal Hair Mask", category: "Hair Care", stock: 12, unit: "Jar", barcode: "899123456" }
                 ];
             }
 
@@ -360,6 +390,67 @@
             renderInventory();
             updateStats();
         });
+
+        // --- Barcode Scanner Logic ---
+        function openScanner(mode = 'search') {
+            scanMode = mode;
+            document.getElementById('scannerModal').classList.remove('hidden');
+            
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5Qrcode("reader");
+            }
+
+            html5QrcodeScanner.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                console.error(err);
+                alert("Gagal membuka kamera: " + err);
+                closeScanner();
+            });
+        }
+
+        function closeScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    document.getElementById('scannerModal').classList.add('hidden');
+                }).catch(err => console.error(err));
+            } else {
+                document.getElementById('scannerModal').classList.add('hidden');
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Play beep sound (optional)
+            // const audio = new Audio('beep.mp3'); audio.play().catch(e=>{}); 
+
+            closeScanner();
+            console.log(`Scan Result: ${decodedText}`);
+
+            if (scanMode === 'add') {
+                // Fill barcode field in Add Modal
+                document.getElementById('newProdBarcode').value = decodedText;
+                showToast("Barcode discan: " + decodedText);
+            } else {
+                // Search Product
+                const product = products.find(p => p.barcode === decodedText);
+                if (product) {
+                    openStockModal(product.id, 'in'); // Default to 'in', user can switch
+                    showToast(`Produk ditemukan: ${product.name}`);
+                } else {
+                    if(confirm(`Produk dengan barcode ${decodedText} tidak ditemukan. Tambah produk baru?`)) {
+                        openModal('addModal');
+                        document.getElementById('newProdBarcode').value = decodedText;
+                    }
+                }
+            }
+        }
+
+        function onScanFailure(error) {
+            // console.warn(`Code scan error = ${error}`);
+        }
 
         // --- Magic Search Logic ---
         function toggleMagicSearch() {
@@ -429,7 +520,7 @@
             }
         }
 
-        // --- Auto-Fill Category (NEW FEATURE) ---
+        // --- Auto-Fill Category ---
         async function autoFillCategory() {
             const name = document.getElementById('newProdName').value;
             if(!name) { alert("Isi nama produk dulu!"); return; }
@@ -534,7 +625,12 @@
                     const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
                     return { ...t, date: dateStr };
                 });
-                const payload = { action: 'save', products: products, transactions: sheetTransactions };
+                // Pastikan barcode ikut dikirim
+                const sheetProducts = products.map(p => ({
+                    id: p.id, name: p.name, category: p.category, stock: p.stock, unit: p.unit, barcode: p.barcode || ''
+                }));
+
+                const payload = { action: 'save', products: sheetProducts, transactions: sheetTransactions };
                 const response = await fetch(url, { method: "POST", body: JSON.stringify(payload) });
                 const result = await response.json();
                 if(result.status === 'success') {
@@ -624,7 +720,14 @@
         }
         function addProduct(e) {
             e.preventDefault();
-            const newProduct = { id: Date.now(), name: document.getElementById('newProdName').value, category: document.getElementById('newProdCat').value, stock: parseInt(document.getElementById('newProdStock').value), unit: document.getElementById('newProdUnit').value || 'Pcs' };
+            const newProduct = { 
+                id: Date.now(), 
+                name: document.getElementById('newProdName').value, 
+                category: document.getElementById('newProdCat').value, 
+                stock: parseInt(document.getElementById('newProdStock').value), 
+                unit: document.getElementById('newProdUnit').value || 'Pcs',
+                barcode: document.getElementById('newProdBarcode').value || '' 
+            };
             products.push(newProduct); renderInventory(); closeModal('addModal'); e.target.reset(); syncData();
         }
         function processTransaction(e) {
