@@ -3,312 +3,652 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Stok - Aeryn Salon</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>AERYN SALON Stock Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f3f4f6; }
+        ::-webkit-scrollbar-thumb { background: #a855f7; border-radius: 10px; } 
+        ::-webkit-scrollbar-thumb:hover { background: #9333ea; }
+
+        /* Loading Overlay */
+        #loadingOverlay {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Magic Search Glow */
+        .magic-mode {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+            border-color: #d8b4fe !important;
+        }
+    </style>
 </head>
-<body>
-    <div class="app-container">
-        <header>
-            <h1>Aeryn Salon – Stok Produk</h1>
-            <nav>
-                <button class="nav-btn active" data-page="dashboard-page">Dashboard</button>
-                <button class="nav-btn" data-page="products-page">Data Produk</button>
-                <button class="nav-btn" data-page="tx-in-page">Transaksi Masuk</button>
-                <button class="nav-btn" data-page="tx-out-page">Transaksi Keluar</button>
-                <button class="nav-btn" data-page="reports-page">Laporan</button>
-            </nav>
-        </header>
+<body class="bg-purple-50 text-gray-800 min-h-screen flex flex-col">
 
-        <main>
-            <!-- Halaman Dashboard -->
-            <div id="dashboard-page" class="page active">
-                <div id="dashboard-cards" class="dashboard-cards">
-                    <!-- Kartu ringkasan akan di-generate oleh JS -->
-                </div>
-                <div class="card mt-2">
-                    <div class="card-header">
-                        <h2>Stok Segera Habis</h2>
-                    </div>
-                    <div class="table-container">
-                        <table id="low-stock-table">
-                            <thead>
-                                <tr>
-                                    <th>Nama Produk</th>
-                                    <th>Kategori</th>
-                                    <th>Stok Akhir</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Diisi oleh JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Halaman Data Produk -->
-            <div id="products-page" class="page">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Daftar Produk</h2>
-                        <button id="addProductBtn" class="btn btn-primary">Tambah Produk Baru</button>
-                    </div>
-                    <div class="filters-container">
-                        <div class="form-group">
-                            <input type="search" id="product-search-input" placeholder="Cari berdasarkan nama atau kode...">
-                        </div>
-                        <div class="form-group">
-                            <select id="product-category-filter">
-                                <option value="">Semua Kategori</option>
-                                <!-- Diisi oleh JS -->
-                            </select>
-                        </div>
-                    </div>
-                    <div class="table-container">
-                        <table id="productTable">
-                            <thead>
-                                <tr>
-                                    <th>Kode</th>
-                                    <th>Nama Produk</th>
-                                    <th>Kategori</th>
-                                    <th>Satuan</th>
-                                    <th>Stok Awal</th>
-                                    <th>Masuk</th>
-                                    <th>Keluar</th>
-                                    <th>Stok Akhir</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Diisi oleh JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Halaman Transaksi Masuk -->
-            <div id="tx-in-page" class="page">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Catat Produk Masuk</h2>
-                    </div>
-                    <form id="tx-in-form" class="transaction-form">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="tx-in-product">Pilih Produk</label>
-                                <select id="tx-in-product" required></select>
-                            </div>
-                            <div class="form-group">
-                                <label for="tx-in-date">Tanggal Masuk</label>
-                                <input type="date" id="tx-in-date" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="tx-in-quantity">Jumlah Masuk</label>
-                                <input type="number" id="tx-in-quantity" min="1" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="tx-in-notes">Keterangan (Opsional)</label>
-                                <input type="text" id="tx-in-notes" placeholder="cth: Dari Supplier A">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
-                    </form>
-                </div>
-                <div class="card mt-2">
-                    <div class="card-header">
-                        <h2>Riwayat Produk Masuk</h2>
-                    </div>
-                    <div class="table-container">
-                        <table id="tx-in-table">
-                            <thead>
-                                <tr>
-                                    <th>Tanggal</th>
-                                    <th>Kode Produk</th>
-                                    <th>Nama Produk</th>
-                                    <th>Jumlah</th>
-                                    <th>Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Diisi oleh JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Halaman Transaksi Keluar -->
-            <div id="tx-out-page" class="page">
-                 <div class="card">
-                    <div class="card-header">
-                        <h2>Catat Produk Keluar</h2>
-                    </div>
-                    <form id="tx-out-form" class="transaction-form">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="tx-out-product">Pilih Produk</label>
-                                <select id="tx-out-product" required></select>
-                            </div>
-                            <div class="form-group">
-                                <label for="tx-out-date">Tanggal Keluar</label>
-                                <input type="date" id="tx-out-date" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="tx-out-quantity">Jumlah Keluar</label>
-                                <input type="number" id="tx-out-quantity" min="1" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="tx-out-usage">Jenis Pemakaian</label>
-                                <select id="tx-out-usage" required>
-                                    <option value="Dipakai Treatment">Dipakai Treatment</option>
-                                    <option value="Dijual ke Customer">Dijual ke Customer</option>
-                                    <option value="Lainnya">Lainnya</option>
-                                </select>
-                            </div>
-                             <div class="form-group form-group-full">
-                                <label for="tx-out-notes">Keterangan (Opsional)</label>
-                                <input type="text" id="tx-out-notes">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
-                    </form>
-                </div>
-                <div class="card mt-2">
-                    <div class="card-header">
-                        <h2>Riwayat Produk Keluar</h2>
-                    </div>
-                    <div class="table-container">
-                        <table id="tx-out-table">
-                            <thead>
-                                <tr>
-                                    <th>Tanggal</th>
-                                    <th>Kode Produk</th>
-                                    <th>Nama Produk</th>
-                                    <th>Jumlah</th>
-                                    <th>Jenis Pemakaian</th>
-                                    <th>Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Diisi oleh JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Halaman Laporan -->
-            <div id="reports-page" class="page">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Filter Laporan</h2>
-                    </div>
-                    <form id="report-filters">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="report-start-date">Tanggal Mulai</label>
-                                <input type="date" id="report-start-date">
-                            </div>
-                            <div class="form-group">
-                                <label for="report-end-date">Tanggal Selesai</label>
-                                <input type="date" id="report-end-date">
-                            </div>
-                            <div class="form-group">
-                                <label for="report-category">Kategori Produk</label>
-                                <select id="report-category">
-                                    <option value="">Semua Kategori</option>
-                                    <!-- Diisi oleh JS -->
-                                </select>
-                            </div>
-                        </div>
-                         <button type="submit" class="btn btn-primary">Tampilkan Laporan</button>
-                    </form>
-                </div>
-                 <div class="card mt-2">
-                    <div class="card-header">
-                        <h2>Hasil Laporan</h2>
-                        <button id="exportCsvBtn" class="btn btn-success">Export ke CSV</button>
-                    </div>
-                    <div class="table-container">
-                        <table id="report-table">
-                            <thead>
-                                <tr>
-                                    <th>Kode Produk</th>
-                                    <th>Nama Produk</th>
-                                    <th>Kategori</th>
-                                    <th>Total Masuk</th>
-                                    <th>Total Keluar</th>
-                                    <th>Stok Akhir</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Diisi oleh JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 z-[100] hidden flex flex-col items-center justify-center text-center px-4">
+        <div class="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-6"></div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">Sedang Memproses...</h3>
+        <p class="text-purple-600 font-medium animate-pulse max-w-md" id="loadingText">Menghubungkan ke sistem...</p>
     </div>
 
-    <!-- Modal untuk Tambah/Edit Produk -->
-    <div id="productModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2 id="modalTitle">Tambah Produk Baru</h2>
-            <form id="productForm">
-                <div class="form-group">
-                    <label for="productId">Kode Produk</label>
-                    <input type="text" id="productId" required placeholder="cth: SHP001">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <!-- Updated logo section -->
+                <div class="bg-purple-100 p-2 rounded-full flex items-center justify-center">
+                    <img src="assets/logo.png" alt="AERYN SALON Logo" class="h-8 w-8 object-contain">
                 </div>
-                <div class="form-group">
-                    <label for="productName">Nama Produk</label>
-                    <input type="text" id="productName" required>
+                <div>
+                    <h1 class="text-lg font-bold text-purple-600 leading-none">AERYN SALON</h1>
+                    <p class="text-xs text-gray-500">Inventory System</p>
                 </div>
-                <div class="form-group">
-                    <label for="productCategory">Kategori</label>
-                    <select id="productCategory" required>
-                        <option value="">Pilih Kategori...</option>
-                        <option value="Shampoo">Shampoo</option>
-                        <option value="Conditioner">Conditioner</option>
-                        <option value="Creambath">Creambath</option>
-                        <option value="Cat Rambut">Cat Rambut</option>
-                        <option value="Styling">Styling</option>
-                        <option value="Lainnya">Lainnya (Baru)</option>
-                    </select>
-                    <input type="text" id="newCategory" class="hidden mt-1" placeholder="Masukkan nama kategori baru">
+            </div>
+            <div class="flex gap-2 items-center">
+                <!-- AI Button -->
+                <button onclick="openModal('aiModal')" class="bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transition flex items-center gap-2 shadow-purple-200">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI
+                </button>
+                <!-- Settings Button -->
+                <button onclick="openModal('settingsModal')" class="text-gray-400 hover:text-purple-600 transition p-2 relative" title="Pengaturan">
+                    <i class="fa-solid fa-gear text-xl"></i>
+                    <span id="cloudStatus" class="absolute top-1 right-1 w-2 h-2 bg-gray-300 rounded-full border border-white"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow container max-w-5xl mx-auto px-4 py-6 space-y-6">
+        
+        <!-- Connection Status Banner -->
+        <div id="cloudWarning" class="hidden bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl flex items-center justify-between text-sm">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-cloud"></i>
+                <span>Belum terhubung ke Google Sheet. Data hanya tersimpan di browser ini.</span>
+            </div>
+            <button onclick="openModal('settingsModal')" class="font-bold underline">Hubungkan</button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-purple-100">
+                <p class="text-xs text-gray-500 mb-1">Total Produk</p>
+                <h3 class="text-2xl font-bold text-gray-800" id="totalItems">0</h3>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-purple-100">
+                <p class="text-xs text-gray-500 mb-1">Stok Menipis</p>
+                <h3 class="text-2xl font-bold text-red-500" id="lowStockCount">0</h3>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-purple-100 col-span-2 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-gray-500">Transaksi Hari Ini</p>
+                    <h3 class="text-xl font-bold text-gray-800" id="todayTransaction">0</h3>
                 </div>
-                <div class="form-group">
-                    <label for="productUnit">Satuan</label>
-                    <select id="productUnit" required>
-                        <option value="botol">Botol</option>
-                        <option value="tube">Tube</option>
-                        <option value="box">Box</option>
-                        <option value="pcs">Pcs</option>
-                    </select>
+                <div class="bg-purple-50 p-3 rounded-full text-purple-500">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
                 </div>
-                <div class="form-group">
-                    <label for="initialStock">Stok Awal</label>
-                    <input type="number" id="initialStock" required min="0">
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-4 border-b border-gray-200 overflow-x-auto pb-2">
+            <button onclick="switchTab('inventory')" id="tab-inventory" class="tab-btn active px-4 py-2 text-purple-600 border-b-2 border-purple-600 font-medium text-sm whitespace-nowrap">
+                <i class="fa-solid fa-boxes-stacked mr-2"></i> Stok Barang
+            </button>
+            <button onclick="switchTab('history')" id="tab-history" class="tab-btn px-4 py-2 text-gray-500 hover:text-purple-600 font-medium text-sm whitespace-nowrap transition">
+                <i class="fa-solid fa-list mr-2"></i> Riwayat Transaksi
+            </button>
+        </div>
+
+        <!-- Inventory View -->
+        <div id="view-inventory" class="fade-in">
+            <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
+                <!-- Magic Search Bar -->
+                <div class="relative flex-grow flex gap-2">
+                    <div class="relative flex-grow">
+                        <i id="searchIcon" class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-all"></i>
+                        <input type="text" id="searchInput" onkeyup="handleSearchInput(event)" placeholder="Cari nama produk..." class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-100 shadow-sm focus:ring-2 focus:ring-purple-400 outline-none text-sm transition-all" autocomplete="off">
+                    </div>
+                    <button onclick="toggleMagicSearch()" id="btnMagicSearch" class="bg-white text-purple-500 border border-purple-200 px-4 rounded-xl hover:bg-purple-50 transition shadow-sm" title="Pencarian Ajaib AI">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="lowStockThreshold">Batas Stok Menipis</label>
-                    <input type="number" id="lowStockThreshold" required min="0" placeholder="cth: 5">
+
+                <div class="flex gap-2">
+                    <button onclick="openModal('addModal')" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl shadow-md shadow-purple-200 transition flex items-center justify-center gap-2 font-medium whitespace-nowrap">
+                        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Produk Baru</span>
+                    </button>
                 </div>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+
+            <!-- Magic Search Hint -->
+            <div id="magicHint" class="hidden mb-4 p-3 bg-purple-50 border border-purple-100 rounded-xl text-xs text-purple-700 flex items-center gap-2 animate-pulse">
+                <i class="fa-solid fa-circle-info"></i>
+                <span><b>Mode Ajaib Aktif:</b> Ketik pencarian bebas (cth: "barang rambut yang sedikit", "semua sampo") lalu tekan <b>Enter</b>.</span>
+            </div>
+
+            <div class="space-y-3" id="inventoryList"></div>
+            
+            <div id="emptyState" class="hidden text-center py-12">
+                <div class="inline-block p-4 bg-white rounded-full mb-3 shadow-sm">
+                    <i class="fa-solid fa-box-open text-4xl text-purple-200"></i>
+                </div>
+                <p class="text-gray-500">Belum ada data produk.</p>
+            </div>
+        </div>
+
+        <!-- History View -->
+        <div id="view-history" class="hidden fade-in">
+            <div class="bg-white rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
+                <div class="p-4 bg-purple-50 border-b border-purple-100 flex justify-between items-center">
+                    <h3 class="font-semibold text-purple-800">Log Aktivitas</h3>
+                    <button onclick="syncData()" class="text-xs bg-white border border-purple-200 text-purple-600 px-3 py-1 rounded-full hover:bg-purple-50"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                </div>
+                <div class="divide-y divide-gray-100 max-h-[600px] overflow-y-auto" id="historyList"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Pengaturan & Cloud</h2>
+                <button onclick="closeModal('settingsModal')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <!-- Google Sheets Config -->
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Google Apps Script URL</label>
+                    <input type="text" id="inputSheetUrl" placeholder="https://script.google.com/..." class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none text-sm">
+                    <p class="text-[10px] text-gray-400 mt-1">Deploy script sebagai 'Web App' dengan akses 'Anyone'.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="syncData(true)" class="flex-1 bg-blue-600 text-white py-2 rounded-xl font-medium hover:bg-blue-700 transition text-sm">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Simpan & Sync
+                    </button>
+                    <button onclick="loadFromCloud()" class="flex-1 bg-white border border-blue-200 text-blue-600 py-2 rounded-xl font-medium hover:bg-blue-50 transition text-sm">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Tarik Data
+                    </button>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 mb-4">
+
+            <!-- Gemini API Config -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Gemini API Key (AI)</label>
+                    <input type="password" id="inputApiKey" placeholder="Paste API Key..." class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none text-sm">
+                </div>
+                <button onclick="saveApiSettings()" class="w-full bg-gray-800 text-white py-2 rounded-xl font-medium hover:bg-gray-900 transition text-sm">Simpan API Key</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Modal (General Advice) -->
+    <div id="aiModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-t-3xl">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white p-2 rounded-full shadow-sm text-purple-500"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h2 class="text-xl font-bold text-gray-800">Asisten AI</h2>
+                </div>
+                <button onclick="closeModal('aiModal')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-grow space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <button onclick="generateAIAdvice('restock')" class="p-4 border border-purple-100 rounded-xl hover:bg-purple-50 text-left flex flex-col items-center text-center transition">
+                        <div class="text-purple-600 mb-2 text-2xl"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <span class="font-semibold text-gray-700 text-sm">Analisa Belanja</span>
+                    </button>
+                    <button onclick="generateAIAdvice('trends')" class="p-4 border border-fuchsia-100 rounded-xl hover:bg-fuchsia-50 text-left flex flex-col items-center text-center transition">
+                        <div class="text-fuchsia-600 mb-2 text-2xl"><i class="fa-solid fa-chart-line"></i></div>
+                        <span class="font-semibold text-gray-700 text-sm">Laporan Tren</span>
+                    </button>
+                    <button onclick="generateAIAdvice('forecast')" class="p-4 border border-violet-100 rounded-xl hover:bg-violet-50 text-left flex flex-col items-center text-center transition">
+                        <div class="text-violet-600 mb-2 text-2xl"><i class="fa-solid fa-crystal-ball"></i></div>
+                        <span class="font-semibold text-gray-700 text-sm">Ramalan Stok</span>
+                    </button>
+                </div>
+                <div id="aiResultContainer" class="hidden bg-gray-50 rounded-xl p-5 border border-gray-200 relative min-h-[100px]">
+                    <div id="aiOutput" class="prose prose-sm prose-purple text-gray-700 text-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Promo Modal -->
+    <div id="promoModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-purple-600">📢 Generator Iklan</h2>
+                <button onclick="closeModal('promoModal')" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <div id="promoContent" class="prose prose-sm prose-purple text-gray-700 text-sm whitespace-pre-line"></div>
+            </div>
+            <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-3xl flex justify-end">
+                <button onclick="navigator.clipboard.writeText(document.getElementById('promoContent').innerText); showToast('Disalin!')" class="text-purple-600 font-medium text-sm hover:underline">
+                    <i class="fa-regular fa-copy"></i> Salin Teks
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal with Auto-Fill -->
+    <div id="addModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Tambah Produk</h2>
+                <button onclick="closeModal('addModal')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form onsubmit="addProduct(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Nama Produk</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="newProdName" required placeholder="Contoh: L'Oreal Shampoo" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none">
+                            <button type="button" onclick="autoFillCategory()" id="btnAutoFill" class="bg-purple-100 text-purple-600 px-3 rounded-lg hover:bg-purple-200 transition" title="Auto-Isi Kategori dengan AI">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Kategori</label>
+                            <select id="newProdCat" class="w-full border border-gray-200 rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-purple-400 outline-none">
+                                <option value="Hair Care">Hair Care</option>
+                                <option value="Skin Care">Skin Care</option>
+                                <option value="Coloring">Coloring</option>
+                                <option value="Tools">Alat</option>
+                                <option value="General">Umum</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">Satuan</label>
+                            <input type="text" id="newProdUnit" placeholder="Pcs/Botol" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">Stok Awal</label>
+                        <input type="number" id="newProdStock" required min="0" placeholder="0" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none">
+                    </div>
+                </div>
+                <button type="submit" class="mt-6 w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700">Simpan</button>
             </form>
         </div>
     </div>
 
-    <div id="loading-overlay" class="loading-overlay hidden">
-        <div class="loading-spinner"></div>
+    <!-- Stock Modal -->
+    <div id="stockModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-xl font-bold text-gray-800" id="stockModalTitle">Update Stok</h2>
+                <button onclick="closeModal('stockModal')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <p id="stockModalProductName" class="text-sm text-purple-600 font-medium mb-6">Nama Produk</p>
+            <form onsubmit="processTransaction(event)">
+                <input type="hidden" id="txProdId">
+                <input type="hidden" id="txType">
+                <div class="space-y-4">
+                    <input type="number" id="txQty" required min="1" placeholder="Jumlah" class="w-full border border-gray-200 rounded-lg py-3 px-4 text-lg font-bold focus:ring-2 focus:ring-purple-400 outline-none">
+                    <input type="text" id="txNote" placeholder="Keterangan" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none">
+                </div>
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <button type="button" onclick="closeModal('stockModal')" class="w-full bg-gray-100 text-gray-600 py-3 rounded-xl hover:bg-gray-200">Batal</button>
+                    <button type="submit" id="btnSubmitTx" class="w-full bg-purple-600 text-white py-3 rounded-xl hover:bg-purple-700">Simpan</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm opacity-0 transition-opacity duration-300 pointer-events-none z-[200] flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-green-400"></i> <span id="toastMsg">Berhasil</span>
+    </div>
+
+    <script>
+        // --- Data State ---
+        let products = [];
+        let transactions = [];
+        let magicSearchActive = false;
+        let sheetUrl = localStorage.getItem('salon_sheet_url') || "";
+        let userApiKey = localStorage.getItem('gemini_api_key') || "";
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('inputSheetUrl').value = sheetUrl;
+            document.getElementById('inputApiKey').value = userApiKey;
+            
+            const localProd = localStorage.getItem('salon_products');
+            const localTx = localStorage.getItem('salon_transactions');
+
+            if(localProd) products = JSON.parse(localProd);
+            if(localTx) transactions = JSON.parse(localTx);
+
+            if (products.length === 0 && !sheetUrl) {
+                products = [
+                    { id: 1, name: "L'Oreal Hair Mask", category: "Hair Care", stock: 12, unit: "Jar" }
+                ];
+            }
+
+            if(sheetUrl) {
+                document.getElementById('cloudStatus').classList.remove('bg-gray-300');
+                document.getElementById('cloudStatus').classList.add('bg-green-500');
+                loadFromCloud(true);
+            } else {
+                document.getElementById('cloudWarning').classList.remove('hidden');
+            }
+
+            renderInventory();
+            updateStats();
+        });
+
+        // --- Magic Search Logic ---
+        function toggleMagicSearch() {
+            magicSearchActive = !magicSearchActive;
+            const input = document.getElementById('searchInput');
+            const icon = document.getElementById('searchIcon');
+            const btn = document.getElementById('btnMagicSearch');
+            const hint = document.getElementById('magicHint');
+
+            if (magicSearchActive) {
+                input.classList.add('magic-mode', 'ring-2', 'ring-purple-400');
+                input.placeholder = "Mode Ajaib: Ketik 'shampoo sedikit' & Enter...";
+                icon.classList.replace('fa-search', 'fa-wand-magic-sparkles');
+                icon.classList.add('text-purple-500');
+                btn.classList.add('bg-purple-500', 'text-white');
+                btn.classList.remove('bg-white', 'text-purple-500');
+                hint.classList.remove('hidden');
+                input.focus();
+            } else {
+                input.classList.remove('magic-mode', 'ring-2', 'ring-purple-400');
+                input.placeholder = "Cari nama produk...";
+                icon.classList.replace('fa-wand-magic-sparkles', 'fa-search');
+                icon.classList.remove('text-purple-500');
+                btn.classList.remove('bg-purple-500', 'text-white');
+                btn.classList.add('bg-white', 'text-purple-500');
+                hint.classList.add('hidden');
+                renderInventory(); 
+            }
+        }
+
+        function handleSearchInput(e) {
+            if (magicSearchActive) {
+                if (e.key === 'Enter') executeMagicSearch();
+            } else {
+                renderInventory(); 
+            }
+        }
+
+        async function executeMagicSearch() {
+            if(!userApiKey) { alert("Set API Key dahulu!"); return; }
+            const query = document.getElementById('searchInput').value;
+            if(!query) return;
+
+            const listDiv = document.getElementById('inventoryList');
+            listDiv.innerHTML = '<div class="text-center py-8"><div class="inline-block w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div><p class="text-purple-600 text-sm mt-2">AI sedang mencari...</p></div>';
+
+            const prompt = `
+                Data: ${JSON.stringify(products.map(p => ({id: p.id, name: p.name, category: p.category, stock: p.stock})))}
+                User Query: "${query}"
+                Task: Return a JSON array of product IDs that match the user's semantic intent.
+                Example Output: [1, 4, 12]
+                Rules: Return ONLY the JSON array. If no match, return [].
+            `;
+
+            try {
+                const responseText = await callGeminiRaw(prompt);
+                const cleanedText = responseText.replace(/```json|```/g, '').trim();
+                const matchedIds = JSON.parse(cleanedText);
+                
+                const filtered = products.filter(p => matchedIds.includes(p.id));
+                renderInventory(filtered);
+                showToast(`Ditemukan ${filtered.length} produk`);
+            } catch (e) {
+                console.error(e);
+                showToast("Gagal melakukan pencarian ajaib.");
+                renderInventory();
+            }
+        }
+
+        // --- Auto-Fill Category (NEW FEATURE) ---
+        async function autoFillCategory() {
+            const name = document.getElementById('newProdName').value;
+            if(!name) { alert("Isi nama produk dulu!"); return; }
+            if(!userApiKey) { alert("Set API Key dahulu!"); return; }
+
+            const btn = document.getElementById('btnAutoFill');
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+            
+            const prompt = `
+                Produk: "${name}"
+                Kategori yang tersedia: ["Hair Care", "Skin Care", "Coloring", "Tools", "General"]
+                Tugas: Tentukan kategori dan unit yang paling sesuai untuk produk ini.
+                Output JSON sahaja: {"category": "Hair Care", "unit": "Botol"}
+            `;
+
+            try {
+                const responseText = await callGeminiRaw(prompt);
+                const cleanedText = responseText.replace(/```json|```/g, '').trim();
+                const result = JSON.parse(cleanedText);
+                
+                if(result.category) document.getElementById('newProdCat').value = result.category;
+                if(result.unit) document.getElementById('newProdUnit').value = result.unit;
+                showToast("Kategori diisi otomatis! ✨");
+            } catch(e) {
+                alert("Gagal meneka kategori.");
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+            }
+        }
+
+        // --- Helper for Gemini Call ---
+        async function callGeminiRaw(promptText) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error("Gemini API Error:", data);
+                    throw new Error(data.error?.message || "Ralat API tidak diketahui");
+                }
+
+                if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+                    return data.candidates[0].content.parts[0].text;
+                } else {
+                    console.error("Unexpected API Response:", data);
+                    throw new Error("Tiada respons dari AI. Mungkin disekat oleh tetapan keselamatan.");
+                }
+            } catch (error) {
+                console.error("Network/Parsing Error:", error);
+                throw error;
+            }
+        }
+
+        // --- Text API Logic ---
+        async function generatePromo(productName) {
+            if(!userApiKey) { alert("Set API Key dahulu."); return; }
+            showLoading("Menulis iklan...");
+            try {
+                const text = await callGeminiRaw(`Buatkan caption promosi pendek media sosial untuk produk salon: "${productName}". Gaya: Ceria, emoji. Bahasa Indonesia.`);
+                document.getElementById('promoContent').innerText = text;
+                openModal('promoModal');
+            } catch(e) { alert("Gagal menjana promo."); } finally { hideLoading(); }
+        }
+
+        async function generateAIAdvice(type) {
+            if(!userApiKey) { alert("Isi Gemini API Key dulu di pengaturan"); openModal('settingsModal'); return; }
+            const container = document.getElementById('aiResultContainer');
+            const output = document.getElementById('aiOutput');
+            container.classList.remove('hidden');
+            output.innerHTML = '<p class="text-center animate-pulse">Sedang berpikir...</p>';
+            
+            let prompt = "";
+            if(type === 'restock') prompt = `Analisa data stok ini dan berikan saran belanja (prioritas stok < 5): ${JSON.stringify(products)}. Bahasa Indonesia.`;
+            if(type === 'trends') prompt = `Analisa tren transaksi ini (top item & dead stock): ${JSON.stringify(transactions.slice(-20))}. Nama produk: ${JSON.stringify(products.map(p=>({id:p.id, name:p.name})))}. Bahasa Indonesia.`;
+            if(type === 'forecast') prompt = `Berdasarkan transaksi ini: ${JSON.stringify(transactions.slice(-50))}, dan stok semasa: ${JSON.stringify(products)}. Ramalkan bila stok barang popular akan habis. Buat dalam format jadual Markdown. Bahasa Indonesia.`;
+
+            try {
+                const text = await callGeminiRaw(prompt);
+                output.innerHTML = marked.parse(text);
+            } catch(e) { output.innerHTML = "Gagal menghubungi AI."; }
+        }
+
+        // --- Common Utils ---
+        function showLoading(msg) { document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('loadingText').innerText = msg; }
+        function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+        
+        async function syncData(isManual = false) {
+            const url = document.getElementById('inputSheetUrl').value.trim();
+            if(!url) { if(isManual) alert("Masukkan URL Google Script dulu!"); return; }
+            localStorage.setItem('salon_sheet_url', url); sheetUrl = url;
+            if(isManual) showLoading("Menyimpan ke Google Cloud...");
+            try {
+                saveToLocal();
+                const sheetTransactions = transactions.map(t => {
+                    const d = new Date(t.date);
+                    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+                    return { ...t, date: dateStr };
+                });
+                const payload = { action: 'save', products: products, transactions: sheetTransactions };
+                const response = await fetch(url, { method: "POST", body: JSON.stringify(payload) });
+                const result = await response.json();
+                if(result.status === 'success') {
+                    document.getElementById('cloudStatus').className = "absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full border border-white";
+                    document.getElementById('cloudWarning').classList.add('hidden');
+                    if(isManual) { showToast("Data tersimpan di Cloud!"); closeModal('settingsModal'); }
+                } else { throw new Error(result.message); }
+            } catch (e) {
+                document.getElementById('cloudStatus').className = "absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white";
+                if(isManual) alert("Gagal Sync: " + e.message);
+            } finally { hideLoading(); }
+        }
+
+        async function loadFromCloud(silent = false) {
+            const url = sheetUrl || document.getElementById('inputSheetUrl').value.trim();
+            if(!url) return;
+            if(!silent) showLoading("Mengambil data...");
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if(data.products) {
+                    products = data.products; transactions = data.transactions || [];
+                    saveToLocal(); renderInventory(); renderHistory(); updateStats();
+                    document.getElementById('cloudStatus').className = "absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full border border-white";
+                    document.getElementById('cloudWarning').classList.add('hidden');
+                    if(!silent) { showToast("Data berjaya ditarik!"); closeModal('settingsModal'); }
+                }
+            } catch (e) { if(!silent) alert("Gagal menarik data."); } finally { hideLoading(); }
+        }
+
+        function saveToLocal() { localStorage.setItem('salon_products', JSON.stringify(products)); localStorage.setItem('salon_transactions', JSON.stringify(transactions)); updateStats(); }
+        function updateStats() {
+            document.getElementById('totalItems').innerText = products.length;
+            document.getElementById('lowStockCount').innerText = products.filter(p => p.stock < 5).length;
+            const today = new Date().toLocaleDateString();
+            document.getElementById('todayTransaction').innerText = transactions.filter(t => new Date(t.date).toLocaleDateString() === today).length;
+        }
+        function renderInventory(filteredList = null) {
+            const list = document.getElementById('inventoryList');
+            list.innerHTML = '';
+            let data = filteredList || products;
+            if(!filteredList && !magicSearchActive) {
+                 const search = document.getElementById('searchInput').value.toLowerCase();
+                 data = products.filter(p => p.name.toLowerCase().includes(search));
+            }
+
+            if (data.length === 0) { document.getElementById('emptyState').classList.remove('hidden'); } 
+            else {
+                document.getElementById('emptyState').classList.add('hidden');
+                data.forEach(p => {
+                    const isLow = p.stock < 5;
+                    let icon = 'fa-pump-soap';
+                    if(p.category === 'Tools') icon = 'fa-scissors';
+                    if(p.category === 'Coloring') icon = 'fa-palette';
+                    list.innerHTML += `
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 transition hover:shadow-md">
+                            <div class="flex items-center gap-4 w-full sm:w-auto">
+                                <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 flex-shrink-0"><i class="fa-solid ${icon} text-lg"></i></div>
+                                <div><h4 class="font-bold text-gray-800">${p.name}</h4><p class="text-xs text-gray-500">${p.category} • ${p.unit}</p></div>
+                            </div>
+                            <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                                <div class="text-center px-2"><span class="text-xs text-gray-400 block uppercase tracking-wider">Stok</span><span class="text-xl font-bold ${isLow ? 'text-red-500' : 'text-gray-800'}">${p.stock}</span></div>
+                                <div class="flex gap-2">
+                                    <button onclick="generatePromo('${p.name}')" class="bg-purple-50 text-purple-600 hover:bg-purple-100 p-2 rounded-lg w-10 h-10 transition" title="Buat Iklan"><i class="fa-solid fa-bullhorn"></i></button>
+                                    <button onclick="openStockModal(${p.id}, 'in')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-plus"></i></button>
+                                    <button onclick="openStockModal(${p.id}, 'out')" class="bg-orange-50 text-orange-600 hover:bg-orange-100 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-minus"></i></button>
+                                    <button onclick="deleteProduct(${p.id})" class="bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            }
+        }
+        function renderHistory() {
+            const list = document.getElementById('historyList'); list.innerHTML = '';
+            const sortedTx = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            sortedTx.forEach(tx => {
+                const product = products.find(p => p.id === tx.productId);
+                const prodName = product ? product.name : 'Produk Terhapus';
+                const isIn = tx.type === 'in';
+                const dateStr = new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                list.innerHTML += `<div class="p-4 flex items-center justify-between hover:bg-gray-50">
+                        <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full ${isIn ? 'bg-emerald-500' : 'bg-orange-500'}"></div>
+                            <div><p class="text-sm font-medium text-gray-800"><span class="${isIn ? 'text-emerald-600' : 'text-orange-600'} font-bold">${isIn ? 'Masuk' : 'Keluar'}</span> ${tx.quantity} qty</p><p class="text-xs text-gray-500">${prodName}</p><p class="text-xs text-gray-400 italic">"${tx.note}"</p></div>
+                        </div><div class="text-right"><p class="text-xs font-bold text-gray-600">${dateStr}</p></div></div>`;
+            });
+        }
+        function addProduct(e) {
+            e.preventDefault();
+            const newProduct = { id: Date.now(), name: document.getElementById('newProdName').value, category: document.getElementById('newProdCat').value, stock: parseInt(document.getElementById('newProdStock').value), unit: document.getElementById('newProdUnit').value || 'Pcs' };
+            products.push(newProduct); renderInventory(); closeModal('addModal'); e.target.reset(); syncData();
+        }
+        function processTransaction(e) {
+            e.preventDefault();
+            const prodId = parseInt(document.getElementById('txProdId').value); const type = document.getElementById('txType').value; const qty = parseInt(document.getElementById('txQty').value);
+            const idx = products.findIndex(p => p.id === prodId); if (idx === -1) return;
+            if (type === 'out' && products[idx].stock < qty) { alert('Stok kurang!'); return; }
+            products[idx].stock = type === 'in' ? products[idx].stock + qty : products[idx].stock - qty;
+            transactions.push({ id: Date.now(), productId: prodId, type: type, quantity: qty, note: document.getElementById('txNote').value || '-', date: new Date().toISOString() });
+            renderInventory(); closeModal('stockModal'); showToast('Berhasil'); syncData();
+        }
+        function deleteProduct(id) { if(confirm('Hapus produk?')) { products = products.filter(p => p.id !== id); renderInventory(); syncData(); } }
+        function saveApiSettings() { const key = document.getElementById('inputApiKey').value.trim(); if(key) { localStorage.setItem('gemini_api_key', key); userApiKey = key; showToast("API Key Disimpan"); } }
+        function switchTab(t) {
+            document.getElementById('view-inventory').classList.toggle('hidden', t !== 'inventory'); document.getElementById('view-history').classList.toggle('hidden', t !== 'history');
+            document.getElementById('tab-inventory').className = t === 'inventory' ? 'tab-btn active px-4 py-2 text-purple-600 border-b-2 border-purple-600 font-medium text-sm whitespace-nowrap' : 'tab-btn px-4 py-2 text-gray-500 font-medium text-sm whitespace-nowrap';
+            document.getElementById('tab-history').className = t === 'history' ? 'tab-btn active px-4 py-2 text-purple-600 border-b-2 border-purple-600 font-medium text-sm whitespace-nowrap' : 'tab-btn px-4 py-2 text-gray-500 font-medium text-sm whitespace-nowrap';
+            if(t === 'history') renderHistory();
+        }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function openStockModal(id, type) { const p = products.find(x => x.id === id); document.getElementById('txProdId').value = id; document.getElementById('txType').value = type; document.getElementById('stockModalTitle').innerText = type === 'in' ? 'Masuk (Restock)' : 'Keluar (Dipakai)'; document.getElementById('stockModalProductName').innerText = p.name; document.getElementById('txQty').value = ''; openModal('stockModal'); }
+        function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 3000); }
+        window.onclick = function(e) { if(e.target.classList.contains('z-50')) e.target.classList.add('hidden'); }
+    </script>
 </body>
 </html>
-
