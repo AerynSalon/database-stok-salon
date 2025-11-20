@@ -216,7 +216,7 @@
                 <div id="reader" class="w-full h-full"></div>
             </div>
             <div class="p-4 text-center text-sm text-gray-600">
-                Arahkan kamera ke barcode barang.
+                Arahkan kamera ke barcode barang. Pastikan cahaya cukup.
             </div>
         </div>
     </div>
@@ -361,6 +361,7 @@
         let userApiKey = localStorage.getItem('gemini_api_key') || "";
         let html5QrcodeScanner = null;
         let scanMode = 'search'; // 'search' or 'add'
+        let isScannerRunning = false;
 
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -400,12 +401,22 @@
                 html5QrcodeScanner = new Html5Qrcode("reader");
             }
 
+            // Simplified configuration to avoid "4 keys" error
+            // Using just facingMode is usually safer for mobile
+            const config = { 
+                fps: 15, 
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
             html5QrcodeScanner.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: { width: 250, height: 250 } },
+                { facingMode: "environment" }, // Simplest config for back camera
+                config,
                 onScanSuccess,
                 onScanFailure
-            ).catch(err => {
+            ).then(() => {
+                isScannerRunning = true;
+            }).catch(err => {
                 console.error(err);
                 alert("Gagal membuka kamera: " + err);
                 closeScanner();
@@ -413,16 +424,20 @@
         }
 
         function closeScanner() {
-            if (html5QrcodeScanner) {
+            document.getElementById('scannerModal').classList.add('hidden');
+            if (html5QrcodeScanner && isScannerRunning) {
                 html5QrcodeScanner.stop().then(() => {
-                    document.getElementById('scannerModal').classList.add('hidden');
-                }).catch(err => console.error(err));
-            } else {
-                document.getElementById('scannerModal').classList.add('hidden');
+                    isScannerRunning = false;
+                }).catch(err => {
+                    console.error("Stop failed", err);
+                    // Force reset state if stop fails
+                    isScannerRunning = false; 
+                });
             }
         }
 
         function onScanSuccess(decodedText, decodedResult) {
+            // Stop scanner first
             closeScanner();
             console.log(`Scan Result: ${decodedText}`);
 
@@ -798,4 +813,4 @@
         window.onclick = function(e) { if(e.target.classList.contains('z-50')) e.target.classList.add('hidden'); }
     </script>
 </body>
-    </html>
+</html>
