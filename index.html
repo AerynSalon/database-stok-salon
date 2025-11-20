@@ -282,7 +282,7 @@
                 <div class="space-y-4">
                     <!-- New Barcode Field -->
                     <div>
-                        <label class="block text-xs text-gray-500 mb-1">Barcode (Opsional)</label>
+                        <label class="block text-xs text-gray-500 mb-1">Barcode (Opsional - Jadi ID Produk)</label>
                         <div class="flex gap-2">
                             <input type="text" id="newProdBarcode" placeholder="Scan atau ketik kode" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-400 outline-none bg-gray-50 font-mono text-sm">
                             <button type="button" onclick="openScanner('add')" class="bg-gray-200 text-gray-600 px-3 rounded-lg hover:bg-gray-300 transition"><i class="fa-solid fa-barcode"></i></button>
@@ -375,7 +375,7 @@
 
             if (products.length === 0 && !sheetUrl) {
                 products = [
-                    { id: 1, name: "L'Oreal Hair Mask", category: "Hair Care", stock: 12, unit: "Jar", barcode: "899123456" }
+                    { id: '899123456', name: "L'Oreal Hair Mask", category: "Hair Care", stock: 12, unit: "Jar", barcode: "899123456" }
                 ];
             }
 
@@ -423,21 +423,17 @@
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            // Play beep sound (optional)
-            // const audio = new Audio('beep.mp3'); audio.play().catch(e=>{}); 
-
             closeScanner();
             console.log(`Scan Result: ${decodedText}`);
 
             if (scanMode === 'add') {
-                // Fill barcode field in Add Modal
                 document.getElementById('newProdBarcode').value = decodedText;
                 showToast("Barcode discan: " + decodedText);
             } else {
-                // Search Product
-                const product = products.find(p => p.barcode === decodedText);
+                // Search Product by ID (which is barcode) or barcode field
+                const product = products.find(p => p.id == decodedText || p.barcode == decodedText);
                 if (product) {
-                    openStockModal(product.id, 'in'); // Default to 'in', user can switch
+                    openStockModal(product.id, 'in');
                     showToast(`Produk ditemukan: ${product.name}`);
                 } else {
                     if(confirm(`Produk dengan barcode ${decodedText} tidak ditemukan. Tambah produk baru?`)) {
@@ -501,7 +497,7 @@
                 Data: ${JSON.stringify(products.map(p => ({id: p.id, name: p.name, category: p.category, stock: p.stock})))}
                 User Query: "${query}"
                 Task: Return a JSON array of product IDs that match the user's semantic intent.
-                Example Output: [1, 4, 12]
+                Example Output: ["1", "abc-123", "5"]
                 Rules: Return ONLY the JSON array. If no match, return [].
             `;
 
@@ -625,9 +621,14 @@
                     const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
                     return { ...t, date: dateStr };
                 });
-                // Pastikan barcode ikut dikirim
+                // Map product to send valid ID and Barcode
                 const sheetProducts = products.map(p => ({
-                    id: p.id, name: p.name, category: p.category, stock: p.stock, unit: p.unit, barcode: p.barcode || ''
+                    id: p.id, 
+                    name: p.name, 
+                    category: p.category, 
+                    stock: p.stock, 
+                    unit: p.unit, 
+                    barcode: p.barcode || p.id // fallback barcode to ID if missing
                 }));
 
                 const payload = { action: 'save', products: sheetProducts, transactions: sheetTransactions };
@@ -668,6 +669,7 @@
             const today = new Date().toLocaleDateString();
             document.getElementById('todayTransaction').innerText = transactions.filter(t => new Date(t.date).toLocaleDateString() === today).length;
         }
+        
         function renderInventory(filteredList = null) {
             const list = document.getElementById('inventoryList');
             list.innerHTML = '';
@@ -685,30 +687,37 @@
                     let icon = 'fa-pump-soap';
                     if(p.category === 'Tools') icon = 'fa-scissors';
                     if(p.category === 'Coloring') icon = 'fa-palette';
+                    // IMPORTANT: Quote the ID string for safety in onclick
                     list.innerHTML += `
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 transition hover:shadow-md">
                             <div class="flex items-center gap-4 w-full sm:w-auto">
                                 <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 flex-shrink-0"><i class="fa-solid ${icon} text-lg"></i></div>
-                                <div><h4 class="font-bold text-gray-800">${p.name}</h4><p class="text-xs text-gray-500">${p.category} • ${p.unit}</p></div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">${p.name}</h4>
+                                    <p class="text-xs text-gray-500">${p.category} • ${p.unit}</p>
+                                    <p class="text-[10px] text-gray-400 font-mono mt-1">ID: ${p.id}</p>
+                                </div>
                             </div>
                             <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                                 <div class="text-center px-2"><span class="text-xs text-gray-400 block uppercase tracking-wider">Stok</span><span class="text-xl font-bold ${isLow ? 'text-red-500' : 'text-gray-800'}">${p.stock}</span></div>
                                 <div class="flex gap-2">
                                     <button onclick="generatePromo('${p.name}')" class="bg-purple-50 text-purple-600 hover:bg-purple-100 p-2 rounded-lg w-10 h-10 transition" title="Buat Iklan"><i class="fa-solid fa-bullhorn"></i></button>
-                                    <button onclick="openStockModal(${p.id}, 'in')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-plus"></i></button>
-                                    <button onclick="openStockModal(${p.id}, 'out')" class="bg-orange-50 text-orange-600 hover:bg-orange-100 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-minus"></i></button>
-                                    <button onclick="deleteProduct(${p.id})" class="bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-trash"></i></button>
+                                    <button onclick="openStockModal('${p.id}', 'in')" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-plus"></i></button>
+                                    <button onclick="openStockModal('${p.id}', 'out')" class="bg-orange-50 text-orange-600 hover:bg-orange-100 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-minus"></i></button>
+                                    <button onclick="deleteProduct('${p.id}')" class="bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 p-2 rounded-lg w-10 h-10 transition"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>`;
                 });
             }
         }
+
         function renderHistory() {
             const list = document.getElementById('historyList'); list.innerHTML = '';
             const sortedTx = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
             sortedTx.forEach(tx => {
-                const product = products.find(p => p.id === tx.productId);
+                // Loose comparison for ID
+                const product = products.find(p => p.id == tx.productId);
                 const prodName = product ? product.name : 'Produk Terhapus';
                 const isIn = tx.type === 'in';
                 const dateStr = new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -718,29 +727,55 @@
                         </div><div class="text-right"><p class="text-xs font-bold text-gray-600">${dateStr}</p></div></div>`;
             });
         }
+
         function addProduct(e) {
             e.preventDefault();
+            const barcode = document.getElementById('newProdBarcode').value.trim();
+            // LOGIC UPDATE: Use Barcode as ID if present, else Date
+            const newId = barcode ? barcode : Date.now().toString();
+            
+            if(products.some(p => p.id == newId)) {
+                alert("Produk dengan ID/Barcode ini sudah ada!");
+                return;
+            }
+
             const newProduct = { 
-                id: Date.now(), 
+                id: newId, 
                 name: document.getElementById('newProdName').value, 
                 category: document.getElementById('newProdCat').value, 
                 stock: parseInt(document.getElementById('newProdStock').value), 
                 unit: document.getElementById('newProdUnit').value || 'Pcs',
-                barcode: document.getElementById('newProdBarcode').value || '' 
+                barcode: barcode 
             };
             products.push(newProduct); renderInventory(); closeModal('addModal'); e.target.reset(); syncData();
         }
+
         function processTransaction(e) {
             e.preventDefault();
-            const prodId = parseInt(document.getElementById('txProdId').value); const type = document.getElementById('txType').value; const qty = parseInt(document.getElementById('txQty').value);
-            const idx = products.findIndex(p => p.id === prodId); if (idx === -1) return;
+            // Treat ID as string
+            const prodId = document.getElementById('txProdId').value; 
+            const type = document.getElementById('txType').value; 
+            const qty = parseInt(document.getElementById('txQty').value);
+            
+            // Loose comparison
+            const idx = products.findIndex(p => p.id == prodId); 
+            
+            if (idx === -1) return;
             if (type === 'out' && products[idx].stock < qty) { alert('Stok kurang!'); return; }
             products[idx].stock = type === 'in' ? products[idx].stock + qty : products[idx].stock - qty;
             transactions.push({ id: Date.now(), productId: prodId, type: type, quantity: qty, note: document.getElementById('txNote').value || '-', date: new Date().toISOString() });
             renderInventory(); closeModal('stockModal'); showToast('Berhasil'); syncData();
         }
-        function deleteProduct(id) { if(confirm('Hapus produk?')) { products = products.filter(p => p.id !== id); renderInventory(); syncData(); } }
+
+        function deleteProduct(id) { 
+            if(confirm('Hapus produk?')) { 
+                products = products.filter(p => p.id != id); 
+                renderInventory(); syncData(); 
+            } 
+        }
+
         function saveApiSettings() { const key = document.getElementById('inputApiKey').value.trim(); if(key) { localStorage.setItem('gemini_api_key', key); userApiKey = key; showToast("API Key Disimpan"); } }
+        
         function switchTab(t) {
             document.getElementById('view-inventory').classList.toggle('hidden', t !== 'inventory'); document.getElementById('view-history').classList.toggle('hidden', t !== 'history');
             document.getElementById('tab-inventory').className = t === 'inventory' ? 'tab-btn active px-4 py-2 text-purple-600 border-b-2 border-purple-600 font-medium text-sm whitespace-nowrap' : 'tab-btn px-4 py-2 text-gray-500 font-medium text-sm whitespace-nowrap';
@@ -749,9 +784,18 @@
         }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function openStockModal(id, type) { const p = products.find(x => x.id === id); document.getElementById('txProdId').value = id; document.getElementById('txType').value = type; document.getElementById('stockModalTitle').innerText = type === 'in' ? 'Masuk (Restock)' : 'Keluar (Dipakai)'; document.getElementById('stockModalProductName').innerText = p.name; document.getElementById('txQty').value = ''; openModal('stockModal'); }
+        function openStockModal(id, type) { 
+            // Loose comparison
+            const p = products.find(x => x.id == id); 
+            document.getElementById('txProdId').value = id; 
+            document.getElementById('txType').value = type; 
+            document.getElementById('stockModalTitle').innerText = type === 'in' ? 'Masuk (Restock)' : 'Keluar (Dipakai)'; 
+            document.getElementById('stockModalProductName').innerText = p.name; 
+            document.getElementById('txQty').value = ''; 
+            openModal('stockModal'); 
+        }
         function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 3000); }
         window.onclick = function(e) { if(e.target.classList.contains('z-50')) e.target.classList.add('hidden'); }
     </script>
 </body>
-</html>
+    </html>
